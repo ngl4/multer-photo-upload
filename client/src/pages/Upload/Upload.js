@@ -2,6 +2,7 @@ import React, { Component } from "react";
 // import { Link } from "react-router-dom";
 import "./Upload.css";
 import Nav from "../../components/Nav";
+// import API from "../../utils/API";
 // import BearCard from "../../components/BearCard";
 
 class Upload extends Component {
@@ -10,7 +11,15 @@ class Upload extends Component {
     topScore: 0,
     array: [],
     guessedCorrect: true,
+    // photoFileArr: [], 
+    // photoFile: ""
   };
+
+  componentDidMount() {
+    // this.setState({
+    //   photoFileArr: []
+    // })
+  }
 
   shuffleArray = arr => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -85,9 +94,25 @@ class Upload extends Component {
 
   };
 
+  // handleSubmitform = event => {
+
+  //   event.preventDefault();
+
+  //   this.state.photoFileArr.push(this.state.photoFile);
+
+  //   console.log(this.state.photoFileArr);
+
+  //   API.uploadPhoto({
+  //     photoFile: this.state.photoFileArr
+  //   })
+  //   .then(res => console.log(res))
+  //   .catch(err => console.log(err));
+
+  // }
+
   render() {
 
-    // let msg;
+    //let msg;
     // if (typeof msg != undefined) {
     //    msg;
     // }else {
@@ -123,12 +148,12 @@ class Upload extends Component {
 
           {/* Content: Clicky boxes- upload images */}
           <div className="container clicky-wrap">
+          {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
           <form action="/api/upload" method="POST" encType="multipart/form-data">
           <div className="custom-file">
-            <input type="file" className="custom-file-input" id="customFile" name="myImage" />
+            <input type="file" className="custom-file-input" id="customFile" name="myImage"/>
             <label className="custom-file-label" for="customFile">Choose file</label>
           </div>
-          
           <button className="btn btn-danger mt-3" type="submit">Submit form</button>
           </form>
           </div>

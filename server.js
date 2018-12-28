@@ -14,9 +14,31 @@ const storage = multer.diskStorage({
 
 //init uploads
 const upload = multer({
-  storage: storage
+  storage: storage,
+  limits: {fileSize: 2000000},
+  fileFilter: function(req, file, cb){
+    checkFileType(file, cb);
+  }
 }).single('myImage');
 
+
+//checkFileType function 
+checkFileType = (file, cb) => {
+  //allow extension 
+  const filetypes = /jpeg|jpg|png|gif/;
+  //check extension
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  //check mime type
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname){
+    return cb(null, true);
+  }else {
+    cb(err, "Error: Images Only");
+  }
+}
+
+//Init express app
 const app = express();
 
 // Connect to the Mongo DB
@@ -46,13 +68,19 @@ app.post("/api/upload", (req, res)=> {
 
   upload(req, res, (err) => {
     if (err) {
-      res.render("Upload", {
-        
-      })
+      console.log(err);
+      res.json(err);
+      // res.render("Upload", {
+      //   msg: err
+      // })
     }else {
       console.log(req.file);
-      
-      res.send("test");
+
+      db.Image
+      .create(req.file)
+      .then(dbModel => res.json(dbModel))
+      .catch(err => res.status(422).json(err));
+
     } 
   })
  
