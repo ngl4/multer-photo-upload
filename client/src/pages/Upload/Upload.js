@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-// import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Upload.css";
 import Nav from "../../components/Nav";
 // import API from "../../utils/API";
@@ -15,14 +15,13 @@ class Upload extends Component {
     guessedCorrect: true,
     images: [],
     imageUrls: [],
-    message: ""
+    imageUrl: "",
+    message: "",
+    errMessage: "",
+    uploadMessage: ""
   };
 
-  componentDidMount() {
-    // this.setState({
-    //   photoFileArr: []
-    // })
-  }
+  
 
   shuffleArray = arr => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -118,10 +117,20 @@ class Upload extends Component {
 
       // Make an AJAX upload request using Axios
       return axios.post(BASE_URL + 'api/upload', data).then(response => {
+        console.log(response);
+        if (response.data.name === "MulterError"){
+          this.setState({
+            errMessage: response.data.message
+          });
+        }else {
         this.setState({
-          imageUrls: [response.data.imageUrl, ...this.state.imageUrls]
+          // imageUrls: [response.data.path, ...this.state.imageUrls],
+          uploadMessage: "File(s) Uploaded!",
+          imageUrl: "uploads/" + response.data.filename
         });
-      });
+
+      }
+      }).catch(err => console.log(err));
     });
     // Once all the files are uploaded
     axios
@@ -129,7 +138,7 @@ class Upload extends Component {
       .then(() => {
         console.log("done");
       })
-      .catch(err => alert(err.message));
+      .catch(err => alert(err.message + " and each upload file limit is 2mb"));
   };
 
   render() {
@@ -166,6 +175,10 @@ class Upload extends Component {
           </div>
 
           {/* Content: Clicky boxes- upload images */}
+          <div className="container">
+          {this.state.errMessage ? <p className="text-danger">{this.state.errMessage}</p> : ""}
+          {this.state.uploadMessage ? <p className="text-success">{this.state.uploadMessage}</p> : ""}
+          </div>
           <div className="container clicky-wrap">
             {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
             <form>
@@ -178,7 +191,7 @@ class Upload extends Component {
                   onChange={this.selectImages}
                   multiple
                 />
-                <label className="custom-file-label" for="customFile">
+                <label className="custom-file-label" htmlFor="customFile">
                   Choose file
                 </label>
               </div>
@@ -190,22 +203,33 @@ class Upload extends Component {
                 Submit form
               </button>
             </form>
-          </div>
-          <br />
-          <br />
-          <hr />
-          <br />
-          <div className="row col-lg-12">
-            {this.state.imageUrls.map((url, i) => (
+    
+
+          <div className="row col-lg-12 mt-5">
+            {/* {this.state.imageUrls.map((url, i) => (
               <div className="col-lg-2" key={i}>
                 <img
-                  src={BASE_URL + url}
+                  src={BASE_URL + "/" + url}
                   className="img-rounded img-responsive"
                   alt="not available"
                 />
                 <br />
               </div>
-            ))}
+            ))} */}
+            {this.state.imageUrl ? <img src={this.state.imageUrl} className="img-rounded img-responsive"
+                  alt="not available" 
+                /> : ""}
+            
+          </div>
+
+          <div className="row col-lg-12 mt-5">
+
+            <Link to="/display">
+            <button className="btn btn-success">See Preview Page</button>
+            </Link>
+
+          </div>
+
           </div>
 
           {/* Footer - force bottom */}
@@ -221,3 +245,6 @@ class Upload extends Component {
 }
 
 export default Upload;
+
+
+//uploads/myImage-1546024131707.jpeg

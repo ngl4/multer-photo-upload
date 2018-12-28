@@ -15,28 +15,9 @@ const storage = multer.diskStorage({
 //init uploads
 const upload = multer({
   storage: storage,
-  limits: {fileSize: 2000000},
-  // fileFilter: function(req, file, cb){
-  //   checkFileType(file, cb);
-  // }
-});
+  limits: {fileSize: 2000000}
+}).single('myImage');
 
-
-//checkFileType function 
-// checkFileType = (file, cb) => {
-//   //allow extension 
-//   const filetypes = /jpeg|jpg|png|gif/;
-//   //check extension
-//   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-//   //check mime type
-//   const mimetype = filetypes.test(file.mimetype);
-
-//   if (mimetype && extname){
-//     return cb(null, true);
-//   }else {
-//     cb(err, "Error: Images Only");
-//   }
-// }
 
 //Init express app
 const app = express();
@@ -45,11 +26,6 @@ const app = express();
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/imageUploadTesting");
 const db = require("./models");
 
-app.get("/image", function(req, res) {
-  db.Image.find({})
-  .then(dbModel => res.json(dbModel))
-  .catch(err => res.status(422).json(err));
-});
 
 
 // Serve up static assets (usually on heroku)
@@ -60,43 +36,40 @@ if (process.env.NODE_ENV === "production") {
 // Send every request to the React app
 // Define any API routes before this runs
 app.get("*", function(req, res) {
-  res.sendFile(path.join(__dirname, "./client/build/index.html"));
+  // res.sendFile(path.join(__dirname, "./client/build/index.html"));
+});
+
+app.get("/api/images", function(req, res) {
+  db.Image.find({})
+  .then(dbModel => res.json(dbModel))
+  .catch(err => res.status(422).json(err));
 });
 
 //Post request
-app.post("/api/upload", upload.single('myImage'), (req, res)=> {
+app.post("/api/upload", (req, res)=> {
 
   console.log("HELLO!!!!");
   console.log(req.file);
 
-  if(req.file) {
-    res.json({
-      imageUrl: `./client/public/uploads/${req.file.filename}`
-  });
-  }else {
-    res.status("409").json("No Files to Upload.");
-  }
-
-  // upload(req, res, (err) => {
-  //   if (err) {
-  //     console.log(err);
-  //     res.json(err);
-  //     // res.render("Upload", {
-  //     //   msg: err
-  //     // })
-  //   }else {
-  //     console.log(req.file);
-
-  //     db.Image
-  //     .create(req.file)
-  //     .then(dbModel => res.json(dbModel))
-  //     .catch(err => res.status(422).json(err));
-
-  //   } 
-  // })
- 
+  upload(req, res, (err) => {
+    if(err) {
+      res.json(err);
+    } else {
+      if(req.file) {
+        db.Image.create(req.file)
+        .then(dbImage => res.json(dbImage))
+        .catch(err => res.json(err));
+        
+      }else {
+        res.status("409").json("No Files to Upload.");
+      }
+    }
+  })
 });
 
 app.listen(PORT, function() {
   console.log(`🌎 ==> API server now on port ${PORT}!`);
 });
+
+
+

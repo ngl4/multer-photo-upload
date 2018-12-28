@@ -1,7 +1,9 @@
 import React, { Component } from "react";
+// import axios from "axios";
 // import { Link } from "react-router-dom";
 import "./Display.css";
 import Nav from "../../components/Nav";
+// const BASE_URL = "http://localhost:3000/";
 // import BearCard from "../../components/BearCard";
 
 class Display extends Component {
@@ -10,7 +12,17 @@ class Display extends Component {
     topScore: 0,
     array: [],
     guessedCorrect: true,
+    images: [],
+    imageUrls: [],
+    imageUrl: "",
+    message: "",
+    errMessage: "",
+    uploadMessage: ""
   };
+
+  componentDidMount() {
+    
+  }
 
   shuffleArray = arr => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -85,6 +97,8 @@ class Display extends Component {
 
   };
 
+  
+
   render() {
 
     return (
@@ -122,6 +136,7 @@ class Display extends Component {
               handleClickImage={this.handleClickImage}
               key={pic}
             />))} */}
+
            </div>
 
           {/* Footer - force bottom */}
