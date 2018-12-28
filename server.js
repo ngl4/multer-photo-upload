@@ -16,27 +16,27 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {fileSize: 2000000},
-  fileFilter: function(req, file, cb){
-    checkFileType(file, cb);
-  }
-}).single('myImage');
+  // fileFilter: function(req, file, cb){
+  //   checkFileType(file, cb);
+  // }
+});
 
 
 //checkFileType function 
-checkFileType = (file, cb) => {
-  //allow extension 
-  const filetypes = /jpeg|jpg|png|gif/;
-  //check extension
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  //check mime type
-  const mimetype = filetypes.test(file.mimetype);
+// checkFileType = (file, cb) => {
+//   //allow extension 
+//   const filetypes = /jpeg|jpg|png|gif/;
+//   //check extension
+//   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+//   //check mime type
+//   const mimetype = filetypes.test(file.mimetype);
 
-  if (mimetype && extname){
-    return cb(null, true);
-  }else {
-    cb(err, "Error: Images Only");
-  }
-}
+//   if (mimetype && extname){
+//     return cb(null, true);
+//   }else {
+//     cb(err, "Error: Images Only");
+//   }
+// }
 
 //Init express app
 const app = express();
@@ -64,25 +64,36 @@ app.get("*", function(req, res) {
 });
 
 //Post request
-app.post("/api/upload", (req, res)=> {
+app.post("/api/upload", upload.single('myImage'), (req, res)=> {
 
-  upload(req, res, (err) => {
-    if (err) {
-      console.log(err);
-      res.json(err);
-      // res.render("Upload", {
-      //   msg: err
-      // })
-    }else {
-      console.log(req.file);
+  console.log("HELLO!!!!");
+  console.log(req.file);
 
-      db.Image
-      .create(req.file)
-      .then(dbModel => res.json(dbModel))
-      .catch(err => res.status(422).json(err));
+  if(req.file) {
+    res.json({
+      imageUrl: `./client/public/uploads/${req.file.filename}`
+  });
+  }else {
+    res.status("409").json("No Files to Upload.");
+  }
 
-    } 
-  })
+  // upload(req, res, (err) => {
+  //   if (err) {
+  //     console.log(err);
+  //     res.json(err);
+  //     // res.render("Upload", {
+  //     //   msg: err
+  //     // })
+  //   }else {
+  //     console.log(req.file);
+
+  //     db.Image
+  //     .create(req.file)
+  //     .then(dbModel => res.json(dbModel))
+  //     .catch(err => res.status(422).json(err));
+
+  //   } 
+  // })
  
 });
 

@@ -1,9 +1,11 @@
 import React, { Component } from "react";
+import axios from "axios";
 // import { Link } from "react-router-dom";
 import "./Upload.css";
 import Nav from "../../components/Nav";
 // import API from "../../utils/API";
 // import BearCard from "../../components/BearCard";
+const BASE_URL = "http://localhost:3000/";
 
 class Upload extends Component {
   state = {
@@ -11,8 +13,9 @@ class Upload extends Component {
     topScore: 0,
     array: [],
     guessedCorrect: true,
-    // photoFileArr: [], 
-    // photoFile: ""
+    images: [],
+    imageUrls: [],
+    message: ""
   };
 
   componentDidMount() {
@@ -44,7 +47,6 @@ class Upload extends Component {
           topScore: this.state.topScore + 1,
           array: newArray,
           guessedCorrect: true
-
         });
         console.log("%cyou guessed correctly", "color: green");
       } else {
@@ -74,11 +76,9 @@ class Upload extends Component {
             topScore: this.state.topScore,
             array: newArray,
             guessedCorrect: true
-
           });
           console.log("%cyou guessed correctly", "color: green");
         }
-
       } else {
         this.setState({
           score: 0,
@@ -91,27 +91,48 @@ class Upload extends Component {
     }
 
     console.log(newArray);
-
   };
 
-  // handleSubmitform = event => {
+  selectImages = event => {
+    let images = [];
+    for (var i = 0; i < event.target.files.length; i++) {
+      images[i] = event.target.files.item(i);
+    }
+    images = images.filter(image => image.name.match(/\.(jpg|jpeg|png|gif)$/));
+    let message = `${images.length} valid image(s) selected`;
+    // console.log(images);
+    // console.log(message);
+    this.setState({ 
+      images: images, 
+      message: message });
+  };
 
-  //   event.preventDefault();
+  uploadImages = event => {
+    event.preventDefault();
+    console.log(this.state.images);
+    console.log(this.state.message);
+    const uploaders = this.state.images.map(image => {
+      const data = new FormData();
+      data.append("myImage", image, image.name);
+       console.log(data);
 
-  //   this.state.photoFileArr.push(this.state.photoFile);
-
-  //   console.log(this.state.photoFileArr);
-
-  //   API.uploadPhoto({
-  //     photoFile: this.state.photoFileArr
-  //   })
-  //   .then(res => console.log(res))
-  //   .catch(err => console.log(err));
-
-  // }
+      // Make an AJAX upload request using Axios
+      return axios.post(BASE_URL + 'api/upload', data).then(response => {
+        this.setState({
+          imageUrls: [response.data.imageUrl, ...this.state.imageUrls]
+        });
+      });
+    });
+    // Once all the files are uploaded
+    axios
+      .all(uploaders)
+      .then(() => {
+        console.log("done");
+      })
+      .catch(err => alert(err.message));
+  };
 
   render() {
-
     //let msg;
     // if (typeof msg != undefined) {
     //    msg;
@@ -125,7 +146,7 @@ class Upload extends Component {
           {/* Sticky Header: Name(link), state, Score and Top Score */}
           <header className="bg-danger p-4 fixed-top">
             <div className="container d-flex justify-content-between text-white font-weight-bold">
-            <Nav />
+              <Nav />
               <div className="header-title">Clickling Game</div>
               {/* <div className="header-midtitle"></div> */}
               <div className="header-scoretitle">
@@ -140,24 +161,52 @@ class Upload extends Component {
               <h1 className="display-4">
                 <strong>Upload Contents Here </strong>
               </h1>
-              <p className="lead">
-                
-              </p>
+              <p className="lead" />
             </div>
           </div>
 
           {/* Content: Clicky boxes- upload images */}
           <div className="container clicky-wrap">
-          {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
-          <form action="/api/upload" method="POST" encType="multipart/form-data">
-          <div className="custom-file">
-            <input type="file" className="custom-file-input" id="customFile" name="myImage"/>
-            <label className="custom-file-label" for="customFile">Choose file</label>
+            {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
+            <form>
+              <div className="custom-file">
+                <input
+                  type="file"
+                  className="custom-file-input"
+                  id="customFile"
+                  name="myImage"
+                  onChange={this.selectImages}
+                  multiple
+                />
+                <label className="custom-file-label" for="customFile">
+                  Choose file
+                </label>
+              </div>
+              <button
+                className="btn btn-danger mt-3"
+                type="submit"
+                onClick={this.uploadImages}
+              >
+                Submit form
+              </button>
+            </form>
           </div>
-          <button className="btn btn-danger mt-3" type="submit">Submit form</button>
-          </form>
+          <br />
+          <br />
+          <hr />
+          <br />
+          <div className="row col-lg-12">
+            {this.state.imageUrls.map((url, i) => (
+              <div className="col-lg-2" key={i}>
+                <img
+                  src={BASE_URL + url}
+                  className="img-rounded img-responsive"
+                  alt="not available"
+                />
+                <br />
+              </div>
+            ))}
           </div>
-          
 
           {/* Footer - force bottom */}
           <footer className="container-fluid bg-danger text-white p-3">
