@@ -16,12 +16,13 @@ class Upload extends Component {
     images: [],
     imageUrls: [],
     imageUrl: "",
+    imageUrl2: "",
     message: "",
     errMessage: "",
-    uploadMessage: ""
+    errMessage2: "",
+    uploadMessage: "",
+    uploadMessage2: ""
   };
-
-  
 
   shuffleArray = arr => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -101,36 +102,93 @@ class Upload extends Component {
     let message = `${images.length} valid image(s) selected`;
     // console.log(images);
     // console.log(message);
-    this.setState({ 
-      images: images, 
-      message: message });
+
+    this.setState({
+      images: images,
+      message: message
+    });
   };
 
   uploadImages = event => {
+    event.preventDefault();
+    // console.log(this.state.images);
+    // console.log(this.state.message);
+
+    const uploaders = this.state.images.map(image => {
+      const data = new FormData();
+      data.append("myImage", image, image.name);
+      console.log(image);
+
+      // Make an AJAX upload request using Axios
+      return axios
+        .post("/api/upload", data)
+        .then(response => {
+          console.log(response);
+
+          if (response.data.name === "MulterError") {
+            this.setState({
+              errMessage: response.data.message
+            });
+          } else {
+            axios({
+              method: 'post',
+              url: '/api/section',
+              params: {
+                section: "section_1",
+                image_id: response.data._id,
+                image_filename: response.data.filename
+              }
+            }).then(res => console.log(res))
+                .catch(err => console.log(err));
+            this.setState({
+              // imageUrls: [response.data.path, ...this.state.imageUrls],
+              uploadMessage: "File(s) Uploaded!",
+              imageUrl: "uploads/" + response.data.filename,
+              errMessage: ""
+            });
+          }
+        })
+        .catch(err => console.log(err));
+    });
+
+    // Once all the files are uploaded
+    axios
+      .all(uploaders)
+      .then(() => {
+        console.log("done");
+      })
+      .catch(err => alert(err.message + " and each upload file limit is 2mb"));
+  };
+
+
+  uploadImage2 = event => {
     event.preventDefault();
     console.log(this.state.images);
     console.log(this.state.message);
     const uploaders = this.state.images.map(image => {
       const data = new FormData();
       data.append("myImage", image, image.name);
-       console.log(data);
+      console.log(data);
 
       // Make an AJAX upload request using Axios
-      return axios.post(BASE_URL + 'api/upload', data).then(response => {
-        console.log(response);
-        if (response.data.name === "MulterError"){
-          this.setState({
-            errMessage: response.data.message
-          });
-        }else {
-        this.setState({
-          // imageUrls: [response.data.path, ...this.state.imageUrls],
-          uploadMessage: "File(s) Uploaded!",
-          imageUrl: "uploads/" + response.data.filename
-        });
-
-      }
-      }).catch(err => console.log(err));
+      return axios
+        .post(BASE_URL + "api/upload", data)
+        .then(response => {
+          console.log(response);
+          if (response.data.name === "MulterError") {
+            this.setState({
+              errMessage2: response.data.message
+            });
+          } else {
+            this.setState({
+              // imageUrls: [response.data.path, ...this.state.imageUrls],
+              uploadMessage2: "File(s) Uploaded!",
+              imageUrl2: "uploads/" + response.data.filename,
+              errMessage2: ""
+            });
+          }
+        })
+        .catch(err => console.log(err));
     });
     // Once all the files are uploaded
     axios
@@ -142,13 +200,6 @@ class Upload extends Component {
   };
 
   render() {
-    //let msg;
-    // if (typeof msg != undefined) {
-    //    msg;
-    // }else {
-    //     "";
-    // }
-
     return (
       <div>
         <div className="wrapper">
@@ -176,8 +227,16 @@ class Upload extends Component {
 
           {/* Content: Clicky boxes- upload images */}
           <div className="container">
-          {this.state.errMessage ? <p className="text-danger">{this.state.errMessage}</p> : ""}
-          {this.state.uploadMessage ? <p className="text-success">{this.state.uploadMessage}</p> : ""}
+            {this.state.errMessage ? (
+              <p className="text-danger">{this.state.errMessage}</p>
+            ) : (
+              ""
+            )}
+            {this.state.uploadMessage ? (
+              <p className="text-success">{this.state.uploadMessage}</p>
+            ) : (
+              ""
+            )}
           </div>
           <div className="container clicky-wrap">
             {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
@@ -200,13 +259,12 @@ class Upload extends Component {
                 type="submit"
                 onClick={this.uploadImages}
               >
-                Submit form
+                Upload
               </button>
             </form>
-    
 
-          <div className="row col-lg-12 mt-5">
-            {/* {this.state.imageUrls.map((url, i) => (
+            <div className="row col-lg-12 mt-5">
+              {/* {this.state.imageUrls.map((url, i) => (
               <div className="col-lg-2" key={i}>
                 <img
                   src={BASE_URL + "/" + url}
@@ -216,20 +274,71 @@ class Upload extends Component {
                 <br />
               </div>
             ))} */}
-            {this.state.imageUrl ? <img src={this.state.imageUrl} className="img-rounded img-responsive"
-                  alt="not available" 
-                /> : ""}
-            
-          </div>
+              {this.state.imageUrl ? (
+                <img
+                  src={this.state.imageUrl}
+                  className="img-rounded img-responsive"
+                  alt="not available"
+                />
+              ) : (
+                ""
+              )}
+            </div>
 
-          <div className="row col-lg-12 mt-5">
+            <div className="container mt-5">
+              {this.state.errMessage2 ? (
+                <p className="text-danger">{this.state.errMessage2}</p>
+              ) : (
+                ""
+              )}
+              {this.state.uploadMessage2 ? (
+                <p className="text-success">{this.state.uploadMessage2}</p>
+              ) : (
+                ""
+              )}
+            </div>
+            <div className="row col-lg-12">
+              <form>
+                <div className="custom-file">
+                  <input
+                    type="file"
+                    className="custom-file-input"
+                    id="customFile"
+                    name="myImage"
+                    onChange={this.selectImages}
+                    multiple
+                  />
+                  <label className="custom-file-label" htmlFor="customFile">
+                    Choose file
+                  </label>
+                </div>
+                <button
+                  className="btn btn-danger mt-3"
+                  type="submit"
+                  onClick={this.uploadImage2}
+                >
+                  Upload
+                </button>
+              </form>
+            </div>
 
-            <Link to="/display">
-            <button className="btn btn-success">See Preview Page</button>
-            </Link>
+            <div className="row col-lg-12 mt-5">
+              {this.state.imageUrl2 ? (
+                <img
+                  src={this.state.imageUrl2}
+                  className="img-rounded img-responsive"
+                  alt="not available"
+                />
+              ) : (
+                ""
+              )}
+            </div>
 
-          </div>
-
+            <div className="row col-lg-12 mt-5">
+              <Link to="/display">
+                <button className="btn btn-success">See Preview Page</button>
+              </Link>
+            </div>
           </div>
 
           {/* Footer - force bottom */}
@@ -245,6 +354,3 @@ class Upload extends Component {
 }
 
 export default Upload;
-
-
-//uploads/myImage-1546024131707.jpeg

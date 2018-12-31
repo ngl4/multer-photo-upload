@@ -10,7 +10,12 @@ const imageSchema = new Schema({
   destination: { type: String, required: true },
   filename: { type: String, required: true },
   path: { type: String, required: true },
-  size: { type: Number, required: true }
+  size: { type: Number, required: true },
+  // imageSection: {type: String, required: true}
+  // section: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "Section"
+  // }
 });
 
 const Image = mongoose.model("Image", imageSchema);

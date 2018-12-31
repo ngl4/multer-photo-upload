@@ -1,4 +1,5 @@
 module.exports = {
-    Image: require("./image")
+    Image: require("./image"),
+    Section: require("./section")
   };
   

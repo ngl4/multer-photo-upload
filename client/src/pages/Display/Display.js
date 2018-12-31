@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-// import axios from "axios";
+import axios from "axios";
 // import { Link } from "react-router-dom";
 import "./Display.css";
 import Nav from "../../components/Nav";
-// const BASE_URL = "http://localhost:3000/";
+const BASE_URL = "http://localhost:3000/";
 // import BearCard from "../../components/BearCard";
 
 class Display extends Component {
@@ -21,7 +21,10 @@ class Display extends Component {
   };
 
   componentDidMount() {
-    
+    axios.get(BASE_URL + "api/images")
+    .then(response => {
+      console.log(response);
+    });
   }
 
   shuffleArray = arr => {
