@@ -3,7 +3,7 @@ import axios from "axios";
 // import { Link } from "react-router-dom";
 import "./Display.css";
 import Nav from "../../components/Nav";
-const BASE_URL = "http://localhost:3000/";
+// const BASE_URL = "http://localhost:3000/";
 // import BearCard from "../../components/BearCard";
 
 class Display extends Component {
@@ -21,9 +21,24 @@ class Display extends Component {
   };
 
   componentDidMount() {
-    axios.get(BASE_URL + "api/images")
+    // axios.get(BASE_URL + "api/images")
+    // .then(response => {
+    //   console.log(response);
+    // });
+
+    axios.get("/api/section/1")
     .then(response => {
-      console.log(response);
+
+      if (response.data.length === 0) {
+        this.setState({
+          imageUrl: ""
+        })
+
+      } else {
+        this.setState({
+          imageUrl: "uploads/" + response.data[0].image_filename
+        })
+      }
     });
   }
 
@@ -139,6 +154,8 @@ class Display extends Component {
               handleClickImage={this.handleClickImage}
               key={pic}
             />))} */}
+
+            <img src={this.state.imageUrl} alt={this.state.imageUrl} />
 
            </div>
 
