@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import "./Upload.css";
 import Nav from "../../components/Nav";
+import ColoredLine from "../../components/ColoredLine";
 // import API from "../../utils/API";
 // import BearCard from "../../components/BearCard";
 const BASE_URL = "http://localhost:3000/";
@@ -16,6 +17,7 @@ class Upload extends Component {
     images: [],
     imageUrls: [],
     imageUrl: "",
+    imageUrl1: "",
     imageUrl2: "",
     message: "",
     errMessage: "",
@@ -24,74 +26,23 @@ class Upload extends Component {
     uploadMessage2: ""
   };
 
-  shuffleArray = arr => {
-    for (let i = arr.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
+  componentDidMount() {
 
-  handleClickImage = elem => {
-    //console.log(elem);
-    var newArray = [...this.state.array];
+    axios.get("/api/section/1")
+    .then(response => {
 
-    if (newArray.length === 0) {
-      newArray.push(elem);
-      this.setState({
-        guessedCorrect: true
-      });
-      if (this.state.score >= this.state.topScore) {
+      if (response.data.length === 0) {
         this.setState({
-          score: this.state.score + 1,
-          topScore: this.state.topScore + 1,
-          array: newArray,
-          guessedCorrect: true
-        });
-        console.log("%cyou guessed correctly", "color: green");
+          imageUrl1: ""
+        })
+
       } else {
         this.setState({
-          score: this.state.score + 1,
-          topScore: this.state.topScore,
-          array: newArray
-        });
-        console.log("%cyou guessed correctly", "color: green");
+          imageUrl1: "uploads/" + response.data[0].image_filename
+        })
       }
-    } else {
-      const found = newArray.includes(elem);
-
-      if (!found) {
-        newArray.push(elem);
-        if (this.state.score >= this.state.topScore) {
-          this.setState({
-            score: this.state.score + 1,
-            topScore: this.state.topScore + 1,
-            array: newArray,
-            guessedCorrect: true
-          });
-          console.log("%cyou guessed correctly", "color: green");
-        } else {
-          this.setState({
-            score: this.state.score + 1,
-            topScore: this.state.topScore,
-            array: newArray,
-            guessedCorrect: true
-          });
-          console.log("%cyou guessed correctly", "color: green");
-        }
-      } else {
-        this.setState({
-          score: 0,
-          topScore: this.state.topScore,
-          array: [],
-          guessedCorrect: false
-        });
-        console.log("%cyou guessed incorrectly", "color: red");
-      }
-    }
-
-    console.log(newArray);
-  };
+    });
+  }
 
   selectImages = event => {
     let images = [];
@@ -131,20 +82,36 @@ class Upload extends Component {
             });
           } else {
             axios({
-              method: 'post',
-              url: '/api/section',
-              params: {
-                section: "section_1",
-                image_id: response.data._id,
-                image_filename: response.data.filename
+              method: "get",
+              url: "/api/section/1"
+            }).then(res => {
+              console.log("RESEPONSE", res);
+
+              if (res.data.length !== 0) {
+                this.setState({
+                  uploadMessage: "",
+                  errMessage:
+                    "Your previous uploaded image is saved; if you want to upload a new image, please delete the saved image."
+                });
+              } else {
+                axios({
+                  method: "post",
+                  url: "/api/section",
+                  params: {
+                    section: "section_1",
+                    image_id: response.data._id,
+                    image_filename: response.data.filename
+                  }
+                })
+                  .then(res => console.log(res))
+                  .catch(err => console.log(err));
+                this.setState({
+                  // imageUrls: [response.data.path, ...this.state.imageUrls],
+                  uploadMessage: "File(s) Uploaded!",
+                  // imageUrl: "uploads/" + response.data.filename,
+                  errMessage: ""
+                });
               }
-            }).then(res => console.log(res))
-                .catch(err => console.log(err));
-            this.setState({
-              // imageUrls: [response.data.path, ...this.state.imageUrls],
-              uploadMessage: "File(s) Uploaded!",
-              imageUrl: "uploads/" + response.data.filename,
-              errMessage: ""
             });
           }
         })
@@ -160,6 +127,35 @@ class Upload extends Component {
       .catch(err => alert(err.message + " and each upload file limit is 2mb"));
   };
 
+  savetoPage = event => {
+    event.preventDefault();
+
+    axios.get("/api/section/1")
+    .then(response => {
+
+      if (response.data.length === 0) {
+        this.setState({
+          imageUrl1: ""
+        })
+
+      } else {
+        this.setState({
+          imageUrl1: "uploads/" + response.data[0].image_filename
+        })
+      }
+    });
+  }
+
+  deleteImage = event => {
+    event.preventDefault();
+
+    axios.delete("/api/section/1")
+    .then(response => {
+      console.log(response);
+      window.location.reload();
+    });
+
+  }
 
   uploadImage2 = event => {
     event.preventDefault();
@@ -227,43 +223,71 @@ class Upload extends Component {
 
           {/* Content: Clicky boxes- upload images */}
           <div className="container">
+            <h4>Section#1: Image</h4>
             {this.state.errMessage ? (
-              <p className="text-danger">{this.state.errMessage}</p>
+              <p className="text-danger ml-3">{this.state.errMessage}</p>
             ) : (
               ""
             )}
             {this.state.uploadMessage ? (
-              <p className="text-success">{this.state.uploadMessage}</p>
+              <p className="text-success ml-3">{this.state.uploadMessage}</p>
             ) : (
               ""
             )}
-          </div>
-          <div className="container clicky-wrap">
-            {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
-            <form>
-              <div className="custom-file">
-                <input
-                  type="file"
-                  className="custom-file-input"
-                  id="customFile"
-                  name="myImage"
-                  onChange={this.selectImages}
-                  multiple
-                />
-                <label className="custom-file-label" htmlFor="customFile">
-                  Choose file
-                </label>
-              </div>
-              <button
-                className="btn btn-danger mt-3"
-                type="submit"
-                onClick={this.uploadImages}
-              >
-                Upload
-              </button>
-            </form>
 
-            <div className="row col-lg-12 mt-5">
+            <div className="wrapper">
+              {/* <p>{typeof msg !== undefined ? msg : ""}</p> */}
+              <div className="row col-lg-12">
+                <div className="col-md-4">
+                  <form>
+                    <div className="custom-file">
+                      <input
+                        type="file"
+                        className="custom-file-input"
+                        id="customFile"
+                        name="myImage"
+                        onChange={this.selectImages}
+                        multiple
+                      />
+                      <label className="custom-file-label" htmlFor="customFile">
+                        Choose file
+                      </label>
+                    </div>
+                    <button
+                      className="btn btn-danger mt-3"
+                      type="submit"
+                      onClick={this.uploadImages}
+                    >
+                      Upload
+                    </button>
+                    <button className="btn btn-success ml-5 mt-3" onClick={this.savetoPage}>
+                      Save to Page
+                    </button>
+                  </form>
+                </div>
+
+                <div className="col-md-2 text-center">
+                  <div className="vl mr-4" />
+                  <div className="vl mr-4" />
+                </div>
+
+                <div className="col-md-4">
+                  {this.state.imageUrl1 ? (
+                    <div>
+                    <img
+                      src={this.state.imageUrl1}
+                      className="img-rounded img-responsive"
+                      alt="not available"
+                    /> 
+                    <button type="delete" onClick={this.deleteImage}>Delete</button>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+
+              {/* <div className="row col-lg-12 mt-5"> */}
               {/* {this.state.imageUrls.map((url, i) => (
               <div className="col-lg-2" key={i}>
                 <img
@@ -273,8 +297,8 @@ class Upload extends Component {
                 />
                 <br />
               </div>
-            ))} */}
-              {this.state.imageUrl ? (
+                     ))} */}
+              {/* {this.state.imageUrl ? (
                 <img
                   src={this.state.imageUrl}
                   className="img-rounded img-responsive"
@@ -282,48 +306,52 @@ class Upload extends Component {
                 />
               ) : (
                 ""
-              )}
-            </div>
+              )} */}
+              {/* </div> */}
 
-            <div className="container mt-5">
-              {this.state.errMessage2 ? (
-                <p className="text-danger">{this.state.errMessage2}</p>
-              ) : (
-                ""
-              )}
-              {this.state.uploadMessage2 ? (
-                <p className="text-success">{this.state.uploadMessage2}</p>
-              ) : (
-                ""
-              )}
-            </div>
-            <div className="row col-lg-12">
-              <form>
-                <div className="custom-file">
-                  <input
-                    type="file"
-                    className="custom-file-input"
-                    id="customFile"
-                    name="myImage"
-                    onChange={this.selectImages}
-                    multiple
-                  />
-                  <label className="custom-file-label" htmlFor="customFile">
-                    Choose file
-                  </label>
-                </div>
-                <button
-                  className="btn btn-danger mt-3"
-                  type="submit"
-                  onClick={this.uploadImage2}
-                >
-                  Upload
-                </button>
-              </form>
-            </div>
+              <ColoredLine color="lightpink" />
 
-            <div className="row col-lg-12 mt-5">
-              {this.state.imageUrl2 ? (
+              <div className="mt-5">
+                <h4>Section#2: Image</h4>
+
+                {this.state.errMessage2 ? (
+                  <p className="text-danger">{this.state.errMessage2}</p>
+                ) : (
+                  ""
+                )}
+                {this.state.uploadMessage2 ? (
+                  <p className="text-success">{this.state.uploadMessage2}</p>
+                ) : (
+                  ""
+                )}
+              </div>
+              <div className="row col-lg-12">
+                <form>
+                  <div className="custom-file">
+                    <input
+                      type="file"
+                      className="custom-file-input"
+                      id="customFile"
+                      name="myImage"
+                      onChange={this.selectImages}
+                      multiple
+                    />
+                    <label className="custom-file-label" htmlFor="customFile">
+                      Choose file
+                    </label>
+                  </div>
+                  <button
+                    className="btn btn-danger mt-3"
+                    type="submit"
+                    onClick={this.uploadImage2}
+                  >
+                    Upload
+                  </button>
+                </form>
+              </div>
+
+              <div className="row col-lg-12 mt-5">
+                {/* {this.state.imageUrl2 ? (
                 <img
                   src={this.state.imageUrl2}
                   className="img-rounded img-responsive"
@@ -331,18 +359,18 @@ class Upload extends Component {
                 />
               ) : (
                 ""
-              )}
-            </div>
+              )} */}
+                <Link to="/display">
+                  <button className="btn btn-success">See Preview Page</button>
+                </Link>
+              </div>
 
-            <div className="row col-lg-12 mt-5">
-              <Link to="/display">
-                <button className="btn btn-success">See Preview Page</button>
-              </Link>
+              <div className="row col-lg-12 mt-5" />
             </div>
           </div>
 
           {/* Footer - force bottom */}
-          <footer className="container-fluid bg-danger text-white p-3">
+          <footer className="container-fluid bg-danger text-white p-3 mt-5">
             <div className="container">
               <p>Copyright 2018 React Clickling Game</p>
             </div>

@@ -155,7 +155,9 @@ class Display extends Component {
               key={pic}
             />))} */}
 
-            <img src={this.state.imageUrl} alt={this.state.imageUrl} />
+            {this.state.imageUrl ? <img src={this.state.imageUrl} alt={this.state.imageUrl} /> : <img src="sample_images/bg_header.png" alt="sample"/> }
+
+            
 
            </div>
 

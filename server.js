@@ -58,14 +58,22 @@ app.get("/api/random", function(req, res) {
 });
 
 app.get("/api/section/1", function(req, res) {
-  db.Section.find({section_name: "section_1"})
-  .then(dbModel => res.json(dbModel))
-  .catch(err => res.status(422).json(err));
-})
+  db.Section.find({ section_name: "section_1" })
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
+});
 
 app.get("*", function(req, res) {
   console.log("hello");
   // res.sendFile(path.join(__dirname, "./client/build/index.html"));
+});
+
+app.delete("/api/section/1", (req, res) => {
+  db.Section.remove({ section_name: "section_1" })
+    .then(dbModel => console.log(dbModel))
+    // .then(dbModel => dbModel.remove())
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
 });
 
 //Post request for creating section
