@@ -26,6 +26,7 @@
     "mongoose": "^5.4.0",
     "multer": "^1.4.1",
     "qs": "^6.6.0",
-    "react-router-dom": "^4.3.1"
+    "react-router-dom": "^4.3.1",
+    "three": "^0.100.0"
   }
 }

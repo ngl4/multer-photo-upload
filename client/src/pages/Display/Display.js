@@ -5,6 +5,7 @@ import "./Display.css";
 import Nav from "../../components/Nav";
 // const BASE_URL = "http://localhost:3000/";
 // import BearCard from "../../components/BearCard";
+import ThreeScene from "../../components/ThreeScene"
 
 class Display extends Component {
   state = {
@@ -146,6 +147,8 @@ class Display extends Component {
               </p>
             </div>
           </div>
+
+          <ThreeScene />
 
           {/* Content: Clicky boxes */}
           <div className="container clicky-wrap">
