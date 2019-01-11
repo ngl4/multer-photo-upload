@@ -6,7 +6,7 @@ import Nav from "../../components/Nav";
 import ColoredLine from "../../components/ColoredLine";
 // import API from "../../utils/API";
 // import BearCard from "../../components/BearCard";
-const BASE_URL = "http://localhost:3000/";
+// const BASE_URL = "http://localhost:3000/";
 
 class Upload extends Component {
   state = {
@@ -42,6 +42,21 @@ class Upload extends Component {
         })
       }
     });
+
+    axios.get("/api/testgetimages")
+    .then(response => {
+      //console.log(response);
+      if (response.data.length === 0) {
+        this.setState({
+          imageUrl2: ""
+        })
+
+      } else {
+        this.setState({
+          imageUrl2: "https://s3.amazonaws.com/cindytestbucket123/" + response.data[0].name
+        })
+      }
+    })
   }
 
   selectImages = event => {
@@ -60,72 +75,72 @@ class Upload extends Component {
     });
   };
 
-  uploadImages = event => {
-    event.preventDefault();
-    // console.log(this.state.images);
-    // console.log(this.state.message);
+  // uploadImages = event => {
+  //   event.preventDefault();
+  //   // console.log(this.state.images);
+  //   // console.log(this.state.message);
 
-    const uploaders = this.state.images.map(image => {
-      const data = new FormData();
-      data.append("myImage", image, image.name);
-      console.log(image);
+  //   const uploaders = this.state.images.map(image => {
+  //     const data = new FormData();
+  //     data.append("myImage", image, image.name);
+  //     console.log(image);
 
-      // Make an AJAX upload request using Axios
-      return axios
-        .post("/api/upload", data)
-        .then(response => {
-          console.log(response);
+  //     // Make an AJAX upload request using Axios
+  //     return axios
+  //       .post("/api/upload", data)
+  //       .then(response => {
+  //         console.log(response);
 
-          if (response.data.name === "MulterError") {
-            this.setState({
-              errMessage: response.data.message
-            });
-          } else {
-            axios({
-              method: "get",
-              url: "/api/section/1"
-            }).then(res => {
-              console.log("RESEPONSE", res);
+  //         if (response.data.name === "MulterError") {
+  //           this.setState({
+  //             errMessage: response.data.message
+  //           });
+  //         } else {
+  //           axios({
+  //             method: "get",
+  //             url: "/api/section/1"
+  //           }).then(res => {
+  //             console.log("RESEPONSE", res);
 
-              if (res.data.length !== 0) {
-                this.setState({
-                  uploadMessage: "",
-                  errMessage:
-                    "Your previous uploaded image is saved; if you want to upload a new image, please delete the saved image."
-                });
-              } else {
-                axios({
-                  method: "post",
-                  url: "/api/section",
-                  params: {
-                    section: "section_1",
-                    image_id: response.data._id,
-                    image_filename: response.data.filename
-                  }
-                })
-                  .then(res => console.log(res))
-                  .catch(err => console.log(err));
-                this.setState({
-                  // imageUrls: [response.data.path, ...this.state.imageUrls],
-                  uploadMessage: "File(s) Uploaded!",
-                  // imageUrl: "uploads/" + response.data.filename,
-                  errMessage: ""
-                });
-              }
-            });
-          }
-        })
-        .catch(err => console.log(err));
-    });
+  //             if (res.data.length !== 0) {
+  //               this.setState({
+  //                 uploadMessage: "",
+  //                 errMessage:
+  //                   "Your previous uploaded image is saved; if you want to upload a new image, please delete the saved image."
+  //               });
+  //             } else {
+  //               axios({
+  //                 method: "post",
+  //                 url: "/api/section",
+  //                 params: {
+  //                   section: "section_1",
+  //                   image_id: response.data._id,
+  //                   image_filename: response.data.filename
+  //                 }
+  //               })
+  //                 .then(res => console.log(res))
+  //                 .catch(err => console.log(err));
+  //               this.setState({
+  //                 // imageUrls: [response.data.path, ...this.state.imageUrls],
+  //                 uploadMessage: "File(s) Uploaded!",
+  //                 // imageUrl: "uploads/" + response.data.filename,
+  //                 errMessage: ""
+  //               });
+  //             }
+  //           });
+  //         }
+  //       })
+  //       .catch(err => console.log(err));
+  //   });
 
-    // Once all the files are uploaded
-    axios
-      .all(uploaders)
-      .then(() => {
-        console.log("done");
-      })
-      .catch(err => alert(err.message + " and each upload file limit is 2mb"));
-  };
+  //   // Once all the files are uploaded
+  //   axios
+  //     .all(uploaders)
+  //     .then(() => {
+  //       console.log("done");
+  //     })
+  //     .catch(err => alert(err.message + " and each upload file limit is 2mb"));
+  // };
 
   savetoPage = event => {
     event.preventDefault();
@@ -157,35 +172,64 @@ class Upload extends Component {
 
   }
 
-  uploadImage2 = event => {
+  // uploadImage2 = event => {
+  //   event.preventDefault();
+  //   console.log(this.state.images);
+  //   console.log(this.state.message);
+  //   const uploaders = this.state.images.map(image => {
+  //     const data = new FormData();
+  //     data.append("myImage", image, image.name);
+  //     console.log(data);
+
+  //     // Make an AJAX upload request using Axios
+  //     return axios
+  //       .post(BASE_URL + "api/upload", data)
+  //       .then(response => {
+  //         console.log(response);
+  //         if (response.data.name === "MulterError") {
+  //           this.setState({
+  //             errMessage2: response.data.message
+  //           });
+  //         } else {
+  //           this.setState({
+  //             // imageUrls: [response.data.path, ...this.state.imageUrls],
+  //             uploadMessage2: "File(s) Uploaded!",
+  //             imageUrl2: "uploads/" + response.data.filename,
+  //             errMessage2: ""
+  //           });
+  //         }
+  //       })
+  //       .catch(err => console.log(err));
+  //   });
+  //   // Once all the files are uploaded
+  //   axios
+  //     .all(uploaders)
+  //     .then(() => {
+  //       console.log("done");
+  //     })
+  //     .catch(err => alert(err.message + " and each upload file limit is 2mb"));
+  // };
+
+
+  uploadImage2Amazon = event => {
     event.preventDefault();
-    console.log(this.state.images);
-    console.log(this.state.message);
     const uploaders = this.state.images.map(image => {
       const data = new FormData();
       data.append("myImage", image, image.name);
-      console.log(data);
+      console.log(image);
 
       // Make an AJAX upload request using Axios
       return axios
-        .post(BASE_URL + "api/upload", data)
+        .post("/api/testupload", data)
         .then(response => {
           console.log(response);
-          if (response.data.name === "MulterError") {
-            this.setState({
-              errMessage2: response.data.message
-            });
-          } else {
-            this.setState({
-              // imageUrls: [response.data.path, ...this.state.imageUrls],
-              uploadMessage2: "File(s) Uploaded!",
-              imageUrl2: "uploads/" + response.data.filename,
-              errMessage2: ""
-            });
-          }
+          this.setState({
+            imageUrl2: response.data
+          })
         })
         .catch(err => console.log(err));
     });
+
     // Once all the files are uploaded
     axios
       .all(uploaders)
@@ -193,7 +237,14 @@ class Upload extends Component {
         console.log("done");
       })
       .catch(err => alert(err.message + " and each upload file limit is 2mb"));
-  };
+  }
+
+  // receiveImage5Amazon = event => {
+  //   event.preventDefault();
+
+   
+  // }
+
 
   render() {
     return (
@@ -343,15 +394,18 @@ class Upload extends Component {
                   <button
                     className="btn btn-danger mt-3"
                     type="submit"
-                    onClick={this.uploadImage2}
+                    onClick={this.uploadImage2Amazon}
                   >
                     Upload
                   </button>
+                  <button className="btn btn-success ml-5 mt-3" onClick={this.receiveImage5Amazon}>
+                      Save to Page
+                    </button>
                 </form>
               </div>
 
               <div className="row col-lg-12 mt-5">
-                {/* {this.state.imageUrl2 ? (
+                {this.state.imageUrl2 ? (
                 <img
                   src={this.state.imageUrl2}
                   className="img-rounded img-responsive"
@@ -359,7 +413,7 @@ class Upload extends Component {
                 />
               ) : (
                 ""
-              )} */}
+              )}
                 <Link to="/display">
                   <button className="btn btn-success">See Preview Page</button>
                 </Link>

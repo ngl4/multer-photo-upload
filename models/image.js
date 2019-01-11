@@ -11,7 +11,7 @@ const imageSchema = new Schema({
   filename: { type: String, required: true },
   path: { type: String, required: true },
   size: { type: Number, required: true },
-  // imageSection: {type: String, required: true}
+  section: { type: String, required: true }
   // section: {
   //   type: Schema.Types.ObjectId,
   //   ref: "Section"

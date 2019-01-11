@@ -20,13 +20,19 @@
     "nodemon": "^1.18.7"
   },
   "dependencies": {
+    "aws-sdk": "^2.385.0",
     "axios": "^0.18.0",
+    "btoa": "^1.2.1",
+    "connect-multiparty": "^2.2.0",
+    "dotenv": "^6.2.0",
     "express": "^4.16.3",
+    "file-system": "^2.2.2",
     "if-env": "^1.0.4",
     "mongoose": "^5.4.0",
     "multer": "^1.4.1",
     "qs": "^6.6.0",
     "react-router-dom": "^4.3.1",
+    "s3fs": "git+https://github.com/RiptideElements/s3fs.git",
     "three": "^0.100.0"
   }
 }
