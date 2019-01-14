@@ -23,40 +23,100 @@ class Upload extends Component {
     errMessage: "",
     errMessage2: "",
     uploadMessage: "",
-    uploadMessage2: ""
+    uploadMessage2: "",
+    about_title: "",
+    about_title_id: "",
+    about_textarea: "",
+    about_textarea_id: "",
+    portfolio_title: "",
+    portfolio_title_id: "",
+    portfolio_textarea: "",
+    portfolio_textarea_id: "",
+    isAboutSubmit: false,
+    isPortfolioSubmit: false,
+
   };
 
   componentDidMount() {
+    axios
+      .get("/api/displayText")
+      .then(res => {
+        console.log(res);
+        //adding this component variable, we can then access the "this" keyword/object 
+        var component = this;
+        if (res) { //TODO: seperate the about and portfolio section
+          res.data.forEach(function(elem, i){
+            if (elem.section === "about_title"){
+              console.log(elem);
+              console.log(component);
+              component.setState({
+                about_title_id: elem._id,
+                about_title: elem.content,
+                 isAboutSubmit: true
+              });
+            }
+            if (elem.section === "about_textarea"){
+              console.log(elem);
+              component.setState({
+                about_textarea_id: elem._id,
+                about_textarea: elem.content,
+                 isAboutSubmit: true
+              });
+            }
+            if (elem.section === "portfolio_title"){
+              console.log(elem);
+              console.log(component);
+              component.setState({
+                portfolio_title_id: elem._id,
+                portfolio_title: elem.content,
+                 isPortfolioSubmit: true
+              });
+            }
+            if (elem.section === "portfolio_textarea"){
+              console.log(elem);
+              component.setState({
+                portfolio_textarea_id: elem._id,
+                portfolio_textarea: elem.content,
+                 isPortfolioSubmit: true
+              });
+            }
+          });
 
-    axios.get("/api/section/1")
-    .then(response => {
+        } else {
+          this.setState({
+            isAboutSubmit: false,
+            isPortfolioSubmit: false
+          });
+        }
+      })
+      .catch(err => console.log(err));
 
+    axios.get("/api/section/1").then(response => {
       if (response.data.length === 0) {
         this.setState({
           imageUrl1: ""
-        })
-
+        });
       } else {
         this.setState({
           imageUrl1: "uploads/" + response.data[0].image_filename
-        })
+        });
       }
     });
 
-    axios.get("/api/testgetimages")
-    .then(response => {
+    axios.get("/api/testgetimages").then(response => {
       //console.log(response);
       if (response.data.length === 0) {
         this.setState({
           imageUrl2: ""
-        })
-
+        });
       } else {
         this.setState({
-          imageUrl2: "https://s3.amazonaws.com/cindytestbucket123/" + response.data[0].name
-        })
+          imageUrl2:
+            "https://s3.amazonaws.com/cindytestbucket123/" +
+            response.data[0].name
+        });
       }
-    })
+    });
   }
 
   selectImages = event => {
@@ -75,6 +135,7 @@ class Upload extends Component {
     });
   };
 
+  //Image Upload #1: multer npm upload
   // uploadImages = event => {
   //   event.preventDefault();
   //   // console.log(this.state.images);
@@ -142,36 +203,32 @@ class Upload extends Component {
   //     .catch(err => alert(err.message + " and each upload file limit is 2mb"));
   // };
 
-  savetoPage = event => {
-    event.preventDefault();
+  // savetoPage = event => {
+  //   event.preventDefault();
 
-    axios.get("/api/section/1")
-    .then(response => {
+  //   axios.get("/api/section/1").then(response => {
+  //     if (response.data.length === 0) {
+  //       this.setState({
+  //         imageUrl1: ""
+  //       });
+  //     } else {
+  //       this.setState({
+  //         imageUrl1: "uploads/" + response.data[0].image_filename
+  //       });
+  //     }
+  //   });
+  // };
 
-      if (response.data.length === 0) {
-        this.setState({
-          imageUrl1: ""
-        })
+  // deleteImage = event => {
+  //   event.preventDefault();
 
-      } else {
-        this.setState({
-          imageUrl1: "uploads/" + response.data[0].image_filename
-        })
-      }
-    });
-  }
+  //   axios.delete("/api/section/1").then(response => {
+  //     console.log(response);
+  //     window.location.reload();
+  //   });
+  // };
 
-  deleteImage = event => {
-    event.preventDefault();
-
-    axios.delete("/api/section/1")
-    .then(response => {
-      console.log(response);
-      window.location.reload();
-    });
-
-  }
-
+  //Image Upload #1: multer npm upload method
   // uploadImage2 = event => {
   //   event.preventDefault();
   //   console.log(this.state.images);
@@ -210,7 +267,14 @@ class Upload extends Component {
   //     .catch(err => alert(err.message + " and each upload file limit is 2mb"));
   // };
 
+  handleInputChange = event => {
+    const { name, value } = event.target;
+    this.setState({
+      [name]: value
+    });
+  };
 
+  //Image Upload #2: Amazon Upload
   uploadImage2Amazon = event => {
     event.preventDefault();
     const uploaders = this.state.images.map(image => {
@@ -225,7 +289,7 @@ class Upload extends Component {
           console.log(response);
           this.setState({
             imageUrl2: response.data
-          })
+          });
         })
         .catch(err => console.log(err));
     });
@@ -237,14 +301,167 @@ class Upload extends Component {
         console.log("done");
       })
       .catch(err => alert(err.message + " and each upload file limit is 2mb"));
-  }
+  };
 
-  // receiveImage5Amazon = event => {
-  //   event.preventDefault();
+  //TextInput: About Section (Submit - Post Request)
+  handleFormSubmit = event => {
+    event.preventDefault();
+    console.log("this is clicked!");
+    console.log(this.state.about_title);
+    console.log(this.state.about_textarea);
+    console.log(this.state.portfolio_title);
+    console.log(this.state.portfolio_textarea);
 
-   
-  // }
+    const type = event.target.dataset.section;
 
+    if (this.state.about_title) {
+
+      axios({
+        method: "post",
+        url: "/api/saveText/" + type,
+        params: {
+          section: "about_title",
+          content: this.state.about_title
+        }
+      })
+        .then(res => {
+          console.log(res);
+
+        })
+        .catch(err => console.log(err));
+
+    }
+    if (this.state.about_textarea) {
+      axios({
+        method: "post",
+        url: "/api/saveText/" + type,
+        params: {
+          section: "about_textarea",
+          content: this.state.about_textarea
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+    if (this.state.portfolio_title) {  //you can do portfolioSS1, portofolioSS2 --> stands for each Small Section 1, 2 ...
+
+      axios({
+        method: "post",
+        url: "/api/saveText/" + type,
+        params: {
+          section: "portfolio_title",
+          content: this.state.portfolio_title
+        }
+      })
+        .then(res => {
+          console.log(res);
+
+        })
+        .catch(err => console.log(err));
+
+    }
+    if (this.state.portfolio_textarea) {
+      axios({
+        method: "post",
+        url: "/api/saveText/" + type,
+        params: {
+          section: "portfolio_textarea",
+          content: this.state.portfolio_textarea
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+
+    this.setState({
+      isAboutSubmit: true,
+      isPortfolioSubmit: true
+    });
+  };
+
+  //TextInput: About Section (Edit - Put Request)
+  handleFormEdit = event => {
+    event.preventDefault();
+    var type = event.target.dataset.section
+
+    if (this.state.about_title) {
+      axios({
+        method: "put",
+        url: "/api/updateText/" + type,
+        params: {
+          _id: this.state.about_title_id,
+          section: type + "_title",
+          content: this.state.about_title
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+    if (this.state.about_textarea) {
+      axios({
+        method: "put",
+        url: "/api/updateText/" + type,
+        params: {
+          _id: this.state.about_textarea_id,
+          section: type + "_textarea",
+          content: this.state.about_textarea
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+    if (this.state.portfolio_title) {
+      axios({
+        method: "put",
+        url: "/api/updateText/" + type,
+        params: {
+          _id: this.state.portfolio_title_id,
+          section: type + "_title",
+          content: this.state.portfolio_title
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+    if (this.state.portfolio_textarea) {
+      axios({
+        method: "put",
+        url: "/api/updateText/" + type,
+        params: {
+          _id: this.state.portfolio_textarea_id,
+          section: type + "_textarea",
+          content: this.state.portfolio_textarea
+        }
+      })
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+
+  };
+
+
+  handleFormDelete = event => {
+    const type = event.target.dataset.section;
+    // debugger;
+    event.preventDefault();
+    // console.log(event);
+    axios.delete("/api/deleteText/" + type).then(response => {
+      console.log(response);
+      window.location.reload();
+    });
+  };
 
   render() {
     return (
@@ -311,7 +528,10 @@ class Upload extends Component {
                     >
                       Upload
                     </button>
-                    <button className="btn btn-success ml-5 mt-3" onClick={this.savetoPage}>
+                    <button
+                      className="btn btn-success ml-5 mt-3"
+                      onClick={this.savetoPage}
+                    >
                       Save to Page
                     </button>
                   </form>
@@ -325,12 +545,14 @@ class Upload extends Component {
                 <div className="col-md-4">
                   {this.state.imageUrl1 ? (
                     <div>
-                    <img
-                      src={this.state.imageUrl1}
-                      className="img-rounded img-responsive"
-                      alt="not available"
-                    /> 
-                    <button type="delete" onClick={this.deleteImage}>Delete</button>
+                      <img
+                        src={this.state.imageUrl1}
+                        className="img-rounded img-responsive"
+                        alt="not available"
+                      />
+                      <button type="delete" onClick={this.deleteImage}>
+                        Delete
+                      </button>
                     </div>
                   ) : (
                     ""
@@ -398,28 +620,191 @@ class Upload extends Component {
                   >
                     Upload
                   </button>
-                  <button className="btn btn-success ml-5 mt-3" onClick={this.receiveImage5Amazon}>
-                      Save to Page
-                    </button>
+                  <button
+                    className="btn btn-success ml-5 mt-3"
+                    onClick={this.receiveImage5Amazon}
+                  >
+                    Save to Page
+                  </button>
                 </form>
               </div>
 
               <div className="row col-lg-12 mt-5">
                 {this.state.imageUrl2 ? (
-                <img
-                  src={this.state.imageUrl2}
-                  className="img-rounded img-responsive"
-                  alt="not available"
-                />
-              ) : (
-                ""
-              )}
+                  <img
+                    src={this.state.imageUrl2}
+                    className="img-rounded img-responsive"
+                    alt="not available"
+                  />
+                ) : (
+                  ""
+                )}
                 <Link to="/display">
                   <button className="btn btn-success">See Preview Page</button>
                 </Link>
               </div>
 
               <div className="row col-lg-12 mt-5" />
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">About</h3>
+                  <hr />
+                  <p class="card-text">
+                    <form>
+                      <div class="form-group">
+                        <label for="aboutFormControlInput1">About: Title</label>
+                        <div class="d-flex justify-content">
+                          <input
+                            name="about_title"
+                            value={this.state.about_title}
+                            onChange={this.handleInputChange}
+                            class="form-control w-75"
+                            id="aboutFormControlInput1"
+                            placeholder="About me"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="aboutFormControlTextarea1">
+                          About: Textarea
+                        </label>
+                        <div class="d-flex justify-content">
+                          <textarea
+                            name="about_textarea"
+                            class="form-control w-75"
+                            id="aboutFormControlTextarea1"
+                            value={this.state.about_textarea}
+                            onChange={this.handleInputChange}
+                            rows="5"
+                          />
+                        </div>
+                        {this.state.isAboutSubmit ? (
+                          <button
+                            type="button"
+                            data-section="about"
+                            class="btn btn-primary btn-sm mr-2 ml-2 h-25 mt-5"
+                            disabled={
+                              !(
+                                this.state.about_title &&
+                                this.state.about_textarea
+                              )
+                            }
+                            onClick={this.handleFormEdit}
+                          >
+                            Edit
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            data-section="about"
+                            class="btn btn-primary btn-sm mr-2 ml-2 h-25 mt-5"
+                            disabled={
+                              !(
+                                this.state.about_title &&
+                                this.state.about_textarea
+                              )
+                            }
+                            onClick={this.handleFormSubmit}
+                          >
+                            Submit
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm h-25 mt-5"
+                          data-section="about"
+                          onClick={this.handleFormDelete}
+                        >
+                          Delete All
+                        </button>
+                      </div>
+                    </form>
+                  </p>
+                </div>
+              </div>
+
+              <div className="row col-lg-12 mt-5" />
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">Portfolio</h3>
+                  <hr />
+                  <p class="card-text">
+                    <form>
+                      <div class="form-group">
+                        <label for="portfolioFormControlInput1">Portfolio: Title</label>
+                        <div class="d-flex justify-content">
+                          <input
+                            name="portfolio_title"
+                            value={this.state.portfolio_title}
+                            onChange={this.handleInputChange}
+                            class="form-control w-75"
+                            id="portfolioFormControlInput1"
+                            placeholder="portfolio name"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="portfolioFormControlTextarea1">
+                          Portfolio: Textarea
+                        </label>
+                        <div class="d-flex justify-content">
+                          <textarea
+                            name="portfolio_textarea"
+                            class="form-control w-75"
+                            id="portfolioFormControlTextarea1"
+                            value={this.state.portfolio_textarea}
+                            onChange={this.handleInputChange}
+                            rows="5"
+                          />
+                        </div>
+                        {this.state.isPortfolioSubmit ? (
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm mr-2 ml-2 h-25 mt-5"
+                            data-section="portfolio"
+                            disabled={
+                              !(
+                                this.state.portfolio_title &&
+                                this.state.portfolio_textarea
+                              )
+                            }
+                            onClick={this.handleFormEdit}
+                          >
+                            Edit
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm mr-2 ml-2 h-25 mt-5"
+                            data-section="portfolio"
+                            disabled={
+                              !(
+                                this.state.portfolio_title &&
+                                this.state.portfolio_textarea
+                              )
+                            }
+                            onClick={this.handleFormSubmit}
+                          >
+                            Submit
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-sm h-25 mt-5"
+                          data-section="portfolio"
+                          onClick={this.handleFormDelete}
+                        >
+                          Delete All
+                        </button>
+                      </div>
+                    </form>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

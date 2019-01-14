@@ -11,11 +11,11 @@ const imageSchema = new Schema({
   filename: { type: String, required: true },
   path: { type: String, required: true },
   size: { type: Number, required: true },
-  section: { type: String, required: true }
-  // section: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: "Section"
-  // }
+  section: { type: String, required: true },
+  textInput: {
+    type: Schema.Types.ObjectId,
+    ref: "textInput"
+  }
 });
 
 const Image = mongoose.model("Image", imageSchema);

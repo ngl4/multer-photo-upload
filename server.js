@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const fs = require("fs");
 const aws = require("aws-sdk");
-require('dotenv').config();
-
+require("dotenv").config();
 
 //Init express app
 const app = express();
@@ -15,9 +14,11 @@ const PORT = process.env.PORT || 3001;
 
 //image upload #2: Amazon S3 Bucket
 const S3FS = require("s3fs");
-const s3fsImpl = new S3FS("cindytestbucket123", {
+const s3fsImpl = new S3FS("cindytestbucket456", {
   accessKeyId: process.env.ACCESS_KEY_ID,
-  secretAccessKey: process.env.SECRET_ACCESS_KEY
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  signatureVersion: "v4",
+  region: "us-east-1"
 });
 
 //create bucket and multiparty
@@ -63,12 +64,20 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
 }
 
+app.get("/api/images", function(req, res) {
+  // console.log("Work or not ???!!!!");
+  db.Image.find({})
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
+});
+
+//Image Upload #2: Amazon Post route
 app.post("/api/testupload", function(req, res) {
   // console.log(req.files);
   // console.log(req.file);
   const file = req.files.myImage;
-   console.log(file);
- 
+  console.log(file);
+
   const stream = fs.createReadStream(file.path);
   s3fsImpl.writeFile(file.originalFilename, stream).then(function() {
     fs.unlink(file.path, function(err) {
@@ -81,34 +90,33 @@ app.post("/api/testupload", function(req, res) {
 
   file.section = "1";
   file.headers = "image";
- console.log(file);
+  console.log(file);
 
- db.ImageAmazon.create(file)
-   .then(dbImageAmazon => {
-     //console.log(dbImageAmazon);
-     return res.json(dbImageAmazon);
-   })
-   .catch(err => res.json(err));
-
+  db.ImageAmazon.create(file)
+    .then(dbImageAmazon => {
+      //console.log(dbImageAmazon);
+      return res.json(dbImageAmazon);
+    })
+    .catch(err => res.json(err));
 });
 
+//Image Upload #2: Amazon Get route
 app.get("/api/testgetimages", function(req, res, next) {
-
   db.ImageAmazon.find({})
-  .then(dbModel => res.json(dbModel))
-  .catch(err => res.status(422).json(err));
-  
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
+
   // var params = {
   //   Bucket: "cindytestbucket123",
   //   Key: "architecture-1850129_640.jpg"
   // };
   // s3.getObject(params, function(err, data) {
-    // res.writeHead(200, {'Content-Type': 'image/jpeg'});
-    // res.write(data.Body, 'binary');
-    // res.end(null, 'binary');
+  // res.writeHead(200, {'Content-Type': 'image/jpeg'});
+  // res.write(data.Body, 'binary');
+  // res.end(null, 'binary');
 
-    // let objectData = data.Body.toString(); // Use the encoding necessary
-    // res.send({objectData});
+  // let objectData = data.Body.toString(); // Use the encoding necessary
+  // res.send({objectData});
   //   if (err) {
   //     console.Log("lireFic", "ERR " + err);
   //   } else {
@@ -118,6 +126,59 @@ app.get("/api/testgetimages", function(req, res, next) {
   //   }
   // });
 });
+
+//About TextInput Save to DB: Post Route
+app.post("/api/saveText/:type", function(req, res) {
+  console.log(req.query);
+  db.TextInput.create(req.query)
+    .then(
+      dbModel => {
+        // db.ImageAmazon.findOne({ section: "1" })
+        //   .populate("image")
+        //   .then(dbImage => {
+        //     dbImage._id;
+        res.json(dbModel);
+      }
+
+    )
+    .catch(err => res.json(err));
+});
+
+//TODO:
+//Getting the Text with an id of the image (pass in the req.query (includes the _id within it))
+//please use db.TextInput.
+//Then use whatever I get and then populate it with the image Id
+
+//All TextInput Display: Get Route
+app.get("/api/displayText", function(req, res) {
+  db.TextInput.find({})
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.json(err));
+});
+
+//About TextInput Update: Put Route ******
+app.put("/api/updateText/:type", function(req, res) {
+  console.log("PUT");
+  console.log(req.query._id, req.query);
+  db.TextInput.findOneAndUpdate({ _id: req.query._id }, req.query)
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
+});
+
+//About TextInput Delete: Delete Route ****
+//  "/api/saveText/:type"
+app.delete("/api/deleteText/:type", function(req, res) {
+  //delete the all text inputs of the specific section from the database***
+  console.log(req.params);
+  const type = req.params.type;
+  db.TextInput.deleteMany({ section: [type + "_title", type + "_textarea"] })
+    .then(dbModel => console.log(dbModel))
+    // .then(dbModel => dbModel.remove())
+    .then(dbModel => res.json(dbModel))
+    .catch(err => res.status(422).json(err));
+});
+
+//___________________________Other___________________________________
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -130,12 +191,6 @@ app.use((req, res, next) => {
 
 // Send every request to the React app
 // Define any API routes before this runs
-app.get("/api/images", function(req, res) {
-  // console.log("Work or not ???!!!!");
-  db.Image.find({})
-    .then(dbModel => res.json(dbModel))
-    .catch(err => res.status(422).json(err));
-});
 
 app.get("/api/random", function(req, res) {
   res.json("Hello World");
@@ -171,7 +226,7 @@ app.post("/api/section", (req, res) => {
   }).then(dbSection => console.log(dbSection));
 });
 
-//Post request for Upload using multer npm 
+//Post request for Upload using multer npm
 // app.post("/api/upload", (req, res) => {
 //   upload(req, res, err => {
 //     // console.log(req.body);
@@ -201,5 +256,3 @@ app.post("/api/section", (req, res) => {
 app.listen(PORT, function() {
   console.log(`🌎 ==> API server now on port ${PORT}!`);
 });
-
-
