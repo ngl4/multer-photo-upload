@@ -21,18 +21,26 @@
   },
   "dependencies": {
     "aws-sdk": "^2.385.0",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "btoa": "^1.2.1",
     "connect-multiparty": "^2.2.0",
     "dotenv": "^6.2.0",
     "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "file-system": "^2.2.2",
     "if-env": "^1.0.4",
     "mongoose": "^5.4.0",
     "multer": "^1.4.1",
+    "orbit-controls-es6": "^2.0.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
     "qs": "^6.6.0",
     "react-router-dom": "^4.3.1",
     "s3fs": "git+https://github.com/RiptideElements/s3fs.git",
-    "three": "^0.100.0"
+    "stats-js": "^1.0.0",
+    "three": "^0.100.0",
+    "three-collada-loader": "^0.0.1",
+    "three-first-person-controls": "^0.2.1",
+    "three-orbit-controls": "^82.1.0"
   }
 }
